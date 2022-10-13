@@ -1,0 +1,61 @@
+%% Constants
+epsilon = [2.69 5 6 7 8 9]
+tandelta = [0.012 0.01 0.02 0.03 0.04 0.05]
+h = [3 0.1 0.1 0.1 0.1 0.1]
+
+%% Calculation of DL(dB)
+% dl_intermediate=summ(sqrt(epsilon(i))*tandelta(i))
+%dl_temp = 0;
+%for i = 1:length(epsilon)
+%    dl_temp = dl_temp + sqrt(epsilon(i))*tandelta(i);
+%end
+
+dl_temp = sum(sqrt(epsilon).*tandelta)
+
+% DL=A*pi/Lambda*dl_intermediate
+%DL = 8.686*pi*77*10^9/(3*10^8)*dl_temp;
+DL = 8.686*pi*77*10^9/(3*10^8*10^3)*sum(sqrt(epsilon).*tandelta)
+
+%% Calculation of tandelta and epsilon
+epsilon_eff = sum(epsilon.*h) / sum(h)
+tandelta_eff = (1 / epsilon_eff) * sum((epsilon .* tandelta) .* h) / sum(h)
+
+%% Calculation of ML
+%temp=sqrt(epsilon(m))*(1-0.5*tandelta(m)*j)
+
+%tau_intermediate = sqrt(1 - (sqrt(epsilon(m))*(1-0.5*tandelta(m)*j)*(sin(theta(i)).^2))/(sqrt(epsilon(m+1))*(1-0.5*tandelta(m+1)*j)))
+
+%tau_p = (sqrt(epsilon(m))*(1-0.5*tandelta(m)*j)*tau_intermediate - sqrt(epsilon(m+1))*(1-0.5*tandelta(m+1)*j)*cos(theta(i)))/(sqrt(epsilon(m))*(1-0.5*tandelta(m)*j)*tau_intermediate + sqrt(epsilon(m+1))*(1-0.5*tandelta(m+1)*j)*cos(theta(i)))
+
+theta = linspace(-pi*85/180, pi*85/180, 171);
+
+epsilon_air = 1;
+tandelta_air = 0;
+
+y_num = sqrt(epsilon_air) * (1 - 1j * tandelta_air/2) * sin(theta).^ 2;
+y_den = sqrt(epsilon_eff) * (1 - 1j * tandelta_eff/2);
+y = sqrt(1 - (y_num/y_den))
+
+%taup_num = sqrt(epsilon_air) * (1 - 1j * tandelta_air/2) * y - sqrt(epsilon_eff) * (1 - 1j * tandelta_eff/2) * cos(theta);
+%taup_den = sqrt(epsilon_air) * (1 - 1j * tandelta_air/2) * y + sqrt(epsilon_eff) * (1 - 1j * tandelta_eff/2) * cos(theta);
+%taup = taup_num / taup_den
+%ML = -10*log10(1 - abs(taup).^2)
+
+taup_num = sqrt(epsilon_air) * (1 - 1j * tandelta_air/2) * y - sqrt(epsilon_eff) * (1 - 1j * tandelta_eff/2) * cos(theta);
+taup_den = sqrt(epsilon_air) * (1 - 1j * tandelta_air/2) * y + sqrt(epsilon_eff) * (1 - 1j * tandelta_eff/2) * cos(theta);
+taup = taup_num ./ taup_den;
+abs(taup)
+ML = -10*log10(1 - abs(taup).^2)
+%for i = 1:length(epsilon)
+%    dl_temp = dl_temp + sqrt(epsilon(i))*tandelta(i);
+%end
+Ideal = 2*(DL+ML)
+BumperEffect = [0.528394081	0.489323029	0.357208662	0.129209689	-0.154419721	-0.429229851	-0.651560967	-0.841756169	-1.076436299	-1.439766221	-1.981443594	-2.697995972	-3.533187844	-4.399486335	-5.215792909	-5.932218325	-6.520122997	-6.952788557	-7.177095684	-7.166208754	-6.881819267	-6.336795364	-5.623119947	-4.872313693	-4.191276031	-3.629949288	-3.190009043	-2.846432039	-2.589973254	-2.456773753	-2.493497744	-2.695200873	-2.981355974	-3.229698268	-3.365637258	-3.41474728	-3.420399225	-3.392489016	-3.373637732	-3.408055375	-3.46957376	-3.490511993	-3.443244916	-3.385808337	-3.347152556	-3.261308538	-3.134381721	-3.055937359	-3.06377746	-3.161325109	-3.30632099	-3.376740761	-3.265732792	-3.034170777	-2.838853153	-2.733466577	-2.716698609	-2.789320342	-2.944618018	-3.201253246	-3.531713853	-3.776272415	-3.838390375	-3.822122207	-3.779426146	-3.738381445	-3.712423254	-3.532224303	-3.105522842	-2.587653715	-2.102109082	-1.738848306	-1.539472877	-1.39658428	-1.197572997	-0.964393645	-0.811826091	-0.797061527	-0.856264052	-0.9148329	-1.008402067	-1.20427173	-1.485146191	-1.771556257	-1.976399018	-2.129110213	-2.271900718	-2.346195165	-2.336752269	-2.257865706	-2.116793827	-1.983350247	-1.845643695	-1.708453871	-1.675870229	-1.716751935	-1.735092527	-1.729740641	-1.762380206	-1.907160384	-2.159410427	-2.433488719	-2.707844032	-2.977611531	-3.185685437	-3.375037487	-3.551757057	-3.621153911	-3.598295154	-3.55323334	-3.496539161	-3.430834951	-3.333894234	-3.200247457	-3.087042267	-3.04247223	-3.063674239	-3.174367234	-3.361093716	-3.50924617	-3.55114881	-3.487206303	-3.323411695	-3.106870098	-2.928963158	-2.857757826	-2.895897856	-3.032306621	-3.227632161	-3.370742423	-3.384782353	-3.31699191	-3.247935245	-3.184371301	-3.10562704	-3.042613235	-3.011338764	-2.954823604	-2.827038113	-2.666875139	-2.57231151	-2.615327077	-2.784119245	-3.025420138	-3.329001778	-3.735315305	-4.282196214	-4.965481723	-5.727114481	-6.458579501	-7.028229293	-7.327220764	-7.305231018	-7.034209036	-6.594249236	-6.004354888	-5.277503111	-4.452738023	-3.605651616	-2.833596903	-2.210021307	-1.747297007	-1.410405487	-1.136464132	-0.863764952	-0.566889199	-0.265760388	0.000240205	0.204115489	0.348974193	0.470091775
+]
+plot(Ideal,'r --o','LineWidth',2)
+legend()
+xlabel('-2\pi < x < 2\pi') 
+ylabel('Sine and Cosine Values') 
+
+hold on                           
+plot(Ideal-BumperEffect,'k --*','LineWidth',2)
